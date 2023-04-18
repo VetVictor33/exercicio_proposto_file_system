@@ -1,4 +1,4 @@
-const { getProductsFromDb, registerSale } = require("../database/repository")
+const { getProductsFromDb, registerSale, getSalesFromDb, getProductFromDb } = require("../database/repository")
 
 const getAllProducts = async (req, res) => {
     try {
@@ -11,10 +11,22 @@ const getAllProducts = async (req, res) => {
     }
 }
 
+const getAllSales = async (req, res) => {
+    try {
+        const sales = await getSalesFromDb();
+        if (!sales) return res.status(500).json({ message: "Something went wrong when accessing the database" });
+        return res.status(200).json(sales);
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+}
+
 const postSale = async (req, res) => {
     const { product_id, amount } = req.body;
     if (!product_id || !amount) return res.status(400).json({ message: "Please inform product_id and amount" });
-    if (Object.keys(req.body).length > 2) return res.status(400).json({ message: "You may inform only one sale per request" });
+
+    const product = await getProductFromDb(product_id);
+    if (!product) return res.status(400).json({ message: `There is no producti with id ${product_id}` });
 
     const sale = { product_id, amount };
     const response = await registerSale(sale);
@@ -26,6 +38,7 @@ const postSale = async (req, res) => {
 
 module.exports = {
     getAllProducts,
+    getAllSales,
     postSale
 
 }

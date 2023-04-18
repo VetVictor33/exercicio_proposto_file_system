@@ -11,6 +11,16 @@ async function getProductsFromDb() {
     }
 }
 
+async function getSalesFromDb() {
+    try {
+        const sales = JSON.parse(await fs.readFile('./src/database/sales.json'));
+        return sales;
+    } catch (error) {
+        console.log(error.message);
+        return undefined
+    }
+}
+
 const registerSale = async (saleData) => {
     const { product_id, amount } = saleData;
     if (!product_id || !amount) return false;
@@ -26,7 +36,8 @@ const registerSale = async (saleData) => {
 
 
     try {
-        const salesDb = JSON.parse(await fs.readFile('./src/database/sales.json'));
+        const salesDb = await getSalesFromDb()
+        if (!salesDb) return
         salesDb.push(sale);
 
         const stringfiedDb = JSON.stringify(salesDb);
@@ -50,6 +61,8 @@ async function getProductFromDb(product_id) {
 
 module.exports = {
     getProductsFromDb,
+    getProductFromDb,
+    getSalesFromDb,
     registerSale
 
 }
